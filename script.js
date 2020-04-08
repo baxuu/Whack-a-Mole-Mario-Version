@@ -69,11 +69,11 @@ function startGame() {
     engineBtn.removeEventListener('click', openRules);
     playButton.removeEventListener('click', startGame);
     holeFind();
-    timeleftTimer();
+    timeLeftTimer();
 }
 
 // Function to calculate time remaining
-function timeleftTimer() {
+function timeLeftTimer() {
     let gameTime = 30;
     let timer = setInterval(function () {
         gameTime--;
