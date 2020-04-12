@@ -14,11 +14,14 @@ const playAgain = document.querySelector('.buttonStart');
 const scoreAct = document.querySelector('.scoreAct');
 const changeTitle = document.querySelector('.title');
 const gameover = document.querySelector('.gameover');
+const high = document.querySelector('.high')
+const highScore = JSON.parse(localStorage.getItem('high')) || 0;
 let score = 0;
 let lastHole;
 let timeUp = false;
 let isActive;
 let imageURL;
+
 
 const images = ['images/goomba.png', 'images/goomba.png', 'images/goomba.png', 'images/goomba.png', 'images/littlegombas.png', 'images/littlegombas.png', 'images/littlegombas.png', 'images/koopatroopa.png', 'images/koopatroopa.png', 'images/koopatroopa.png', 'images/spiny.png', 'images/spiny.png', 'images/spiny.png', 'images/piranhaplant.png', 'images/piranhaplant.png', 'images/goldenmushroom.png'];
 
@@ -27,39 +30,35 @@ engineBtn.addEventListener('click', openRules);
 exitBtn.addEventListener('click', exitRules);
 playButton.addEventListener('click', startGame);
 
-
-
-
-
 // Function to restart game and play again on button shown when previous game ended
 playAgain.addEventListener('click', () => {
     document.location.reload;
-
 });
-
-
 // Function to open Game Over display
 function showGameOver() {
     gameovere.style.display = "block";
-    scoreAct.textContent += `Score: ${score}$`;
+    scoreAct.textContent += `Score: ${score} POINTS`;
     if (score != 0) {
         changeTitle.textContent = "time's up";
         gameover.style.background = "blue";
         stagecomplete.play();
     }
 }
-
 // Function to open table with rules 
 function openRules() {
     rule.style.display = "block";
 }
-
 // Function to quit table with rules 
 function exitRules() {
     rule.style.display = "none";
 }
 
+// Function to save in local storage and update hightscore
 
+setBestScore = (highScore = 0, high) => {
+    localStorage.setItem('high', JSON.stringify(highScore));
+    high.innerText = highScore;
+}
 // Function to start the game
 function startGame() {
     timeUp = false;
@@ -71,7 +70,6 @@ function startGame() {
     holeFind();
     timeLeftTimer();
 }
-
 // Function to calculate time remaining
 function timeLeftTimer() {
     let gameTime = 30;
@@ -86,13 +84,11 @@ function timeLeftTimer() {
         if (gameTime <= 0) {
             showGameOver();
             stopGame()
+
         }
     }, 30000);
-    scoreAct.textContent = "";
-
 }
-
-// Function to randomly choose holes +
+// Function to randomly choose holes 
 function randomHole(holes) {
     const index = Math.floor(Math.random() * holes.length);
     const hole = holes[index];
@@ -102,12 +98,10 @@ function randomHole(holes) {
     lastHole = hole;
     return hole;
 };
-
-// Function to randomly determine the duration +
+// Function to randomly determine the duration 
 function randomTime(min, max) {
     return Math.round(Math.random() * (max - min) + min);
 };
-
 // Function to randomly choose on which hole character will shown up
 function holeFind() {
     const time = randomTime(900, 1200);
@@ -117,7 +111,6 @@ function holeFind() {
         hole.classList.remove('up');
         if (!timeUp) holeFind();
     }, time);
-
     const idx = Math.floor(Math.random() * (images.length));
     imageURL = images[idx];
     moles.forEach(mole => {
@@ -126,64 +119,63 @@ function holeFind() {
     isActive = document.querySelector(".hole.up").children;
     isActive[0].style.backgroundImage = `url('${imageURL}')`;
 };
-
-
 // Function to determine rules of the game
-function getImage() {
-    if (imageURL === "images/koopatroopa.png") {
-        stomp.play();
-        isActive[0].style.backgroundImage = "url('images/shell.png')";
-        isActive[0].addEventListener('click', () => {
+function rulesOfTheGame() {
+    switch (imageURL) {
+        case "images/koopatroopa.png":
             score += 150;
-            coinsound1.play();
+            stomp.play();
+            isActive[0].style.backgroundImage = "url('images/shell.png')";
+            isActive[0].addEventListener('click', () => {
+                coinsound1.play();
+                isActive[0].parentNode.classList.remove('up');
+            })
+            setTimeout(() => {
+                isActive[0].parentNode.classList.remove('up');
+            }, 1000);
+            break;
+        case "images/piranhaplant.png":
+            score = 0;
+            timeUp = true;
+            backgroundMusic.pause();
+            mariohit.play();
+            setTimeout(() => {
+                showGameOver()
+                gameoverSound.play();
+            }, 2500);
+            break;
+        case "images/littlegombas.png":
+            score += 150;
+            coinsound.play();
             isActive[0].parentNode.classList.remove('up');
-        })
-        setTimeout(() => {
+            break;
+        case "images/goldenmushroom.png":
+            score *= 2;
+            goldenmushroom.play();
+            goldenmushroom.currentTime = 0;
             isActive[0].parentNode.classList.remove('up');
-        }, 1000);
-        score += 150;
-
-    } else if (imageURL === "images/piranhaplant.png") {
-        timeUp = true;
-        score = 0;
-        backgroundMusic.pause();
-        mariohit.play();
-
-        setTimeout(() => {
-            showGameOver()
-            gameoverSound.play();
-        }, 2500);
-
-    } else if (imageURL === "images/littlegombas.png") {
-        coinsound.play();
-        isActive[0].parentNode.classList.remove('up');
-        score += 150;
-    } else if (imageURL === "images/goldenmushroom.png") {
-        goldenmushroom.play();
-        goldenmushroom.currentTime = 0;
-        isActive[0].parentNode.classList.remove('up');
-        score *= 2;
-
-    } else if (imageURL === "images/spiny.png") {
-        powerdown.play();
-        isActive[0].parentNode.classList.remove('up');
-        score -= 200;
-
-    } else {
-        coinsound.play();
-        isActive[0].parentNode.classList.remove('up');
-        score += 100;
+            break;
+        case "images/spiny.png":
+            score -= 200;
+            powerdown.play();
+            isActive[0].parentNode.classList.remove('up');
+            break;
+        case "images/goomba.png":
+            score += 100;
+            coinsound.play();
+            isActive[0].parentNode.classList.remove('up');
+            break;
+        default:
     }
     scoreBoard.textContent = score;
+    if (score > highScore) setBestScore(score, high);
 }
-
 // Function Game Over
 function stopGame() {
     backgroundMusic.pause();
     backgroundMusic.currentTime = 0;
     timeUp = true;
 }
-
 // Function to find if character is clicked
 function clickIt(e) {
     if (!e.isTrusted) return;
@@ -193,7 +185,8 @@ function clickIt(e) {
     coinMove.classList.remove('animated');
     setTimeout(() => {
         game.style.cursor = "url('images/beforehit.png'), auto";
-    }, 150)
+    }, 150);
     game.style.cursor = "url('images/afterhit.png'), auto";
-    getImage(imageURL);
+    rulesOfTheGame(imageURL);;
 }
+setBestScore(highScore, high);
